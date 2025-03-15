@@ -1,4 +1,4 @@
-import { Actor, Collider, Color, CollisionType, DefaultLoader, Engine, EventEmitter, ExcaliburGraphicsContext, GameEvent, Keys, Random, Rectangle, Scene, SceneActivationContext, Shape, Tile, TileMap, vec, EdgeCollider, PolygonCollider } from "excalibur";
+import { Actor, Collider, Color, CollisionType, DefaultLoader, Engine, EventEmitter, ExcaliburGraphicsContext, GameEvent, Keys, Random, Rectangle, Scene, SceneActivationContext, Shape, Tile, TileMap, vec, EdgeCollider, PolygonCollider, Vector, StandardClock } from "excalibur";
 import { Player } from "../Actors/players/player";
 import { Resources } from "../resources";
 import { WolfFactory } from "../Factories/enemy-factories.ts/wolf factory";
@@ -6,6 +6,18 @@ import { PauseMenu } from "../menus/PauseMenu/PauseMenu";
 import { LevelUpMenu } from "../menus/LevelUpMenu/LevelupMenu";
 import { Warrior } from "../Actors/players/Warrior";
 import { Mage } from "../Actors/players/Mage";
+import { SlimeFactory } from "../Factories/enemy-factories.ts/slime-factory";
+
+function makePlayerFromId (id: number, engine: Engine, startingPosition: Vector): Player {
+    switch (id) {
+        case 0: 
+            return new Warrior(engine, startingPosition);
+        case 1:
+            return new Mage(engine, startingPosition);
+        default:
+            return new Player(engine, startingPosition);
+    }
+}
 
 const TILE_WIDTH = 240;
 const TILE_HEIGHT = 240;
@@ -68,46 +80,61 @@ export class BaseLevel extends Scene {
     }
 
     override onInitialize(engine: Engine): void {
-        //this.createScene(engine);
-
+        
     }
 
-    override onActivate(context: SceneActivationContext<unknown>): void {
-
-        // Clear everything
-        //this.clear();
-
-        // Recreate scene from scratch
-        this.createScene(this.engine);
+    private initializePlayer(engine: Engine, typeId = 0) {
+        this.player = makePlayerFromId(typeId, engine, vec(this.tileMap.width/2, this.tileMap.height/2));
+        this.add(this.player)
     }
 
-    createScene (engine: Engine) {
-        this.clear()
+    initializeLevel(engine: Engine) {
         this.add(this.tileMap)
+    }
 
-        this.player = new Warrior(engine, vec(this.tileMap.width/2, this.tileMap.height/2)); // Assuming Warrior is a concrete subclass of Player
-        this.add(this.player); // Actors need to be added to a scene to be drawn
-
-        this.player.events.on('kill', () => {
-            this.triggerGameOver();
-        });
-
+    private initializeMenus(engine: Engine) {
         const levelUpMenu = new LevelUpMenu(engine)
-
         this.player.events.on('levelUp', event => {
+            console.log('levelUP')
             levelUpMenu.show(event.player)
         });
-
-        const factory = new WolfFactory(this, 1500)
-        factory.start()
-
-        this.camera.strategy.lockToActor(this.player)
 
         const pauseMenu = new PauseMenu(engine);
         this.engine.input.keyboard.on('press', (event) => {
             if(event.key === Keys.Esc)
                 pauseMenu.show()
         });
+    }
+
+    initializeWaves(engine: Engine) {
+        const wolffactory = new WolfFactory(this);
+        const slimefactory = new SlimeFactory(this);
+        wolffactory.startStandardOffscreenSpawn(2000);
+        slimefactory.startStandardOffscreenSpawn(3000);
+
+
+        //1 minute
+        engine.clock.schedule(() => {
+            slimefactory.spawnCircleAroundPoint(this.player.pos, 500, 20);
+            wolffactory.offscreenStandardTimer.interval = 1000;
+            slimefactory.offscreenStandardTimer.interval = 1000;
+        }, 60*1000)
+
+    }
+
+    override onActivate(context: SceneActivationContext<{ typeId: number }>): void {
+        const engine = this.engine;
+
+        this.clear()
+        this.initializeLevel(engine);
+        this.initializePlayer(engine, context?.data?.typeId);
+        this.initializeMenus(engine)
+        this.initializeWaves(engine)
+
+        this.player.events.on('kill', () => {
+            this.triggerGameOver();
+        });
+        this.camera.strategy.lockToActor(this.player)
     }
 
 

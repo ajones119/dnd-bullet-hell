@@ -1,23 +1,24 @@
 import { Circle, Color, Scene, Timer, vec } from "excalibur";
 import { Player } from "../../Actors/players/player";
 import { ICON_SIDE, WeaponFactory } from "./base-weapon-factory";
-import { Dagger } from "../../Actors/weapons/Dagger";
+import { Shield } from "../../Actors/weapons/Shield";
 
-export class DaggerFactory extends WeaponFactory<Dagger> {
-    id = 'dagger';
+export class ShieldFactory extends WeaponFactory<Shield> {
+    id = 'shield';
     private timer: Timer;
     icon = new Circle({
         radius: ICON_SIDE,
-        color: Color.Green
-    })
+        color: Color.Purple
+    });
 
     constructor(
         player: Player,
         scene: Scene,
     ) {
-        super(player, scene, Dagger);
+        super(player, scene, Shield);
+        const templateWeapon = new Shield({player, pos: player.pos, angle: vec(0, 0)});
         this.timer = new Timer({
-            interval: this.templateWeapon.cooldown,
+            interval: templateWeapon.cooldown,
             repeats: true,
             action: () => this.spawnWeapon()
         });
@@ -28,15 +29,7 @@ export class DaggerFactory extends WeaponFactory<Dagger> {
         const pos = this.player.pos;
         const angle = this.player.facingAngle;
         const templateWeapon = new this.weaponType({player: this.player, pos, angle});
-        this.scene.add(templateWeapon)
-        if (this.weaponLevel > 1) {
-            const pos = this.player.pos.add(vec(1, 1).scale(20));
-            const angle = this.player.facingAngle;
-            const templateWeapon = new this.weaponType({player: this.player, pos, angle});
-            this.scene.add(templateWeapon)
-        }
-
-        
+        this.scene.add(templateWeapon)        
     }
 
     start = () => {
@@ -49,7 +42,7 @@ export class DaggerFactory extends WeaponFactory<Dagger> {
 
     reset = () => {
         for (const actor of this.scene.actors) {
-            if (actor instanceof Dagger)
+            if (actor instanceof Shield)
                 actor.kill()
             
         }

@@ -1,12 +1,12 @@
-import { Wolf } from "../../Actors/enemies/Wolf";
+import { Slime } from "../../Actors/enemies/Slime";
 import { BaseLevel } from "../../Levels/base";
 import { BaseEnemyFactory } from "./base-enemy-factory";
 
-export class WolfFactory extends BaseEnemyFactory<Wolf> {
+export class SlimeFactory extends BaseEnemyFactory<Slime> {
     constructor(
         level: BaseLevel,
     ) {
-        super(level, Wolf)
+        super(level, Slime)
     }
-    
+
 }

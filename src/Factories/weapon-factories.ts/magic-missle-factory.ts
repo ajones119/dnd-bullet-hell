@@ -1,19 +1,23 @@
-import { Engine, Random, Scene, Timer, vec, Vector } from "excalibur";
+import { Circle, Color, Engine, Random, Scene, Timer, vec, Vector } from "excalibur";
 import { Player } from "../../Actors/players/player";
-import { WeaponFactory } from "./base-weapon-factory";
+import { ICON_SIDE, WeaponFactory } from "./base-weapon-factory";
 import { MagicMissle } from "../../Actors/weapons/MagicMissle";
 
 export class MagicMissleFactory extends WeaponFactory<MagicMissle> {
+    id = 'magicMissle'
     private timer: Timer;
+    icon = new Circle({
+        radius: ICON_SIDE,
+        color: Color.Blue
+    })
 
     constructor(
         player: Player,
         scene: Scene,
     ) {
         super(player, scene, MagicMissle);
-        const templateWeapon = new MagicMissle({player, pos: player.pos, angle: vec(0, 0)});
         this.timer = new Timer({
-            interval: templateWeapon.time,
+            interval: this.weaponCooldown,
             repeats: true,
             action: () => this.spawnWeapon()
         });
@@ -25,6 +29,11 @@ export class MagicMissleFactory extends WeaponFactory<MagicMissle> {
         const angle = this.player.facingAngle;
         const templateWeapon = new this.weaponType({player: this.player, pos, angle});
         this.scene.add(templateWeapon)
+    }
+
+    override levelUp(): void {
+        this.weaponLevel++;
+        this.timer.interval = this.timer.interval * 0.4;
     }
 
     start = () => {

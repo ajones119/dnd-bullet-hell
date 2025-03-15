@@ -1,20 +1,33 @@
 import { Collider, CollisionContact, Engine, Shape, Side, vec, Vector, Color } from "excalibur";
 
 import { Resources } from "../../resources";
-import { BaseWeapon, BaseWeaponProps } from "./baseWeapon";
+import { BASE_WEAPON_STATS, BaseWeapon, BaseWeaponProps } from "./baseWeapon";
+
+const BASE_WIDTH = 50;
+const BASE_HEIGHT = 10;
+
+const DAGGER_WEAPON_MAP: BASE_WEAPON_STATS[] = [
+    {damage: 20, speed: 1000, knockback: 500, numberOfWeapons: 1, cooldown: 1000},
+    {damage: 20, speed: 1000, knockback: 500, numberOfWeapons: 1, cooldown: 1000},
+    {damage: 20, speed: 1000, knockback: 500, numberOfWeapons: 1, cooldown: 1000},
+    {damage: 20, speed: 1000, knockback: 500, numberOfWeapons: 1, cooldown: 1000},
+    {damage: 20, speed: 1000, knockback: 500, numberOfWeapons: 1, cooldown: 1000},
+    {damage: 20, speed: 1000, knockback: 500, numberOfWeapons: 1, cooldown: 1000},
+    {damage: 20, speed: 1000, knockback: 500, numberOfWeapons: 1, cooldown: 1000},
+];
 
 export class Dagger extends BaseWeapon {
-    damage = 20;
-    speed = 1000;
-    time = 1000;
+    levelUpMap: BASE_WEAPON_STATS[] = DAGGER_WEAPON_MAP;
     acceleration = 500;
+    
 
     throwSound = Resources.SoundThrow;
         
 
     constructor(args: BaseWeaponProps) {
         const angle = args?.angle || Vector.Zero;
-
+        const height = BASE_HEIGHT + (BASE_HEIGHT * args.player.weaponSizeBonus);
+        const width = BASE_WIDTH + (BASE_WIDTH * args.player.weaponSizeBonus);
         super({
             ...args,
             color: Color.Green,
@@ -22,13 +35,14 @@ export class Dagger extends BaseWeapon {
             height: undefined,
             radius: undefined,
             anchor: vec(0.5, 0.5),
-            collider: Shape.Box(100, 25),
+            collider: Shape.Box(width, height),
         })
+        const acceleration = this.acceleration + (this.acceleration * args.player.weaponSpeedBonus);
 
         //need to flip the graphic
         const weaponImage = Resources.Dagger.toSprite()
-        weaponImage.width = 100;
-        weaponImage.height = 25;
+        weaponImage.width = width;
+        weaponImage.height = height;
         weaponImage.scale = vec(-1, 1);  // Flip horizontally
         
         this.graphics.use(weaponImage);
@@ -36,7 +50,7 @@ export class Dagger extends BaseWeapon {
         const direction = angle.normalize();
 
         this.vel = direction.scale(-1);
-        this.acc = direction.scale(this.acceleration)
+        this.acc = direction.scale(acceleration)
         this.rotation = Math.atan2(direction.y, direction.x)
     }
 

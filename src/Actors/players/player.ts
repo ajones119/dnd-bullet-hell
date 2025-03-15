@@ -1,4 +1,4 @@
-import { Actor, Animation, clamp, Collider, CollisionContact, CollisionType, Color, Engine, EventEmitter, GameEvent, Keys, Side, SpriteSheet, Timer, vec, Vector } from "excalibur";
+import { Actor, Animation, clamp, Collider, CollisionContact, CollisionType, Color, Engine, EventEmitter, GameEvent, Keys, Scene, Side, SpriteSheet, Timer, vec, Vector } from "excalibur";
 import { Resources } from "../../resources";
 import { Config } from "../../config";
 import { Score } from "../../ui/Score";
@@ -8,6 +8,8 @@ import { MagicMissleFactory } from "../../Factories/weapon-factories.ts/magic-mi
 import { PlayerMagneticFieldSensor } from "./PlayerMagneticFieldSensor";
 import { ProgressBar } from "../../ui/ProgressBar";
 import { BaseEnemy } from "../enemies/baseEnemy";
+import { ShieldFactory } from "../../Factories/weapon-factories.ts/shield-factory";
+import InventoryUI from "../../ui/Inventory";
 
 export class PlayerDamagedEvent extends GameEvent<Player> {
   constructor(public target: Player) {
@@ -24,7 +26,13 @@ export class ScoreEvent extends GameEvent<Player> {
 }
 
 export class LevelUpEvent extends GameEvent<Player> {
-  constructor(public level: number, public player: Player, increase: number) {
+  constructor(public level: number, public player: Player, public increase: number) {
+      super();
+  }
+}
+
+export class InventoryChangeEvent extends GameEvent<Player> {
+  constructor(public level: number, public player: Player) {
       super();
   }
 }
@@ -34,6 +42,7 @@ type PlayerEvents = {
   playerDamaged: PlayerDamagedEvent;
   score: ScoreEvent;
   levelUp: LevelUpEvent;
+  inventoryChange: InventoryChangeEvent;
 }
 const expForLevel = (lvl: number) => Math.floor(50 * Math.pow(lvl, 2)); // Quadratic growth
 
@@ -62,6 +71,7 @@ export class Player extends Actor {
   attack = 10;
   speed = 100;
   weapons: WeaponFactory<any>[] = [];
+  maxWeapons = 6;
   xp = 0;
 
   //bonus multiplier
@@ -73,6 +83,7 @@ export class Player extends Actor {
   weaponSpeedBonus = 0;
   areaOfEffectBonus = 0;
   weaponSizeBonus = 0;
+  cooldownReduction = 0; 
 
   walkAnimation!: Animation;
   idleAnimation!: Animation;
@@ -82,8 +93,9 @@ export class Player extends Actor {
   scoreLabel = new Score(0);
   xpLabel!: ProgressBar;
   healthLabel!: ProgressBar;
+  inventoryUI!: InventoryUI;
 
-  constructor(engine: Engine, startingPosition: Vector) {
+  constructor(private engine: Engine, startingPosition: Vector) {
     super({
       name: 'Player',
       pos: startingPosition,
@@ -92,6 +104,8 @@ export class Player extends Actor {
       color: Color.Red,
       collisionType: CollisionType.Active
     });
+
+    this.inventoryUI = new InventoryUI(this, engine.currentScene)
   }
 
   override onInitialize(engine: Engine): void {
@@ -147,6 +161,8 @@ export class Player extends Actor {
     this.graphics.use('idle')
 
     this.addChild(this.scoreLabel);
+    this.inventoryUI.updateInventory(this)
+    this.addChild(this.inventoryUI)
 
     this.events.on('score', (event) => {
       this.scoreLabel.addScore(event.score);
@@ -256,17 +272,46 @@ export class Player extends Actor {
     this.xpLabel.setProgress(newXp/nextLevelExp);
   }
 
+  get weaponIds() {
+    return this.weapons.map(weaponFactory => weaponFactory.id)
+  }
+
+  levelWeapon(weaponId: WeaponIds) {
+    console.log('levelWeapon', weaponId)
+
+    //is the weapon in our weapons array, if so level it
+    // otherwise check if array is full and add the weapon if there is space
+    // else throw error
+
+    if(this.weaponIds.includes(weaponId)) {
+      const index = this.weaponIds.findIndex(weapon => weapon === weaponId);
+      if (!isNaN(index)) {
+        this.weapons[index].levelUp();
+      }
+    } else if (this.weaponIds.length < this.maxWeapons) {
+      const factory = WeaponsConfig[weaponId];
+      this.weapons.push(factory(this, this.engine.currentScene));
+      this.emit('inventoryChange', {player: this})
+    }
+
+    this.startWeaponsFactories();
+  }
+
   override onCollisionStart(self: Collider, other: Collider, side: Side, contact: CollisionContact): void {
-    console.log(contact)
     if (other.owner instanceof BaseEnemy) {
-      console.log(contact)
       const enemy = other.owner;
       const knockbackDir = enemy.pos.sub(this.pos).normalize();
 
       // Apply impulse for kickback effect
       enemy.vel = knockbackDir.scale(this.getKnockback());
     }
-    // Called when a pair of objects are in contact
-
   }
 }
+
+export const WeaponsConfig = {
+  'dagger': (player: Player, scene: Scene) => new DaggerFactory(player, scene),
+  'magicMissle': (player: Player, scene: Scene) => new MagicMissleFactory(player, scene),
+  'shield': (player: Player, scene: Scene) => new ShieldFactory(player, scene),
+}
+
+export type WeaponIds = keyof typeof WeaponsConfig;

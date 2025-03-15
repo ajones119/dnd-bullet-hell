@@ -1,8 +1,7 @@
-import { Actor, Animation, Engine, Side, SpriteSheet, vec, Vector } from "excalibur";
+import { Animation, Engine, SpriteSheet, Vector } from "excalibur";
 import { Resources } from "../../resources";
 import { BaseEnemy } from "./baseEnemy";
 import { SmallXp } from "../DropItems/smallXP";
-
 
 export class Wolf extends BaseEnemy {
     //state

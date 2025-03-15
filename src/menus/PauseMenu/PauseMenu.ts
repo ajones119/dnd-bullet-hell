@@ -12,9 +12,7 @@ import { Engine } from "excalibur";
     private async loadMenu() {
         try {
         const response = await fetch("/html/pause-menu.html");
-        console.log('res', response)
         const menuHtml = await response.text();
-        console.log('menu', menuHtml)
 
         const menuContainer = document.createElement("div");
         menuContainer.innerHTML = menuHtml;
@@ -37,7 +35,6 @@ import { Engine } from "excalibur";
     }
 
     show() {
-        console.log("SHOW", this.menuElement)
         if (this.menuElement) {
             this.menuElement.style.display = "block";
             this.engine.stop()

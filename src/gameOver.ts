@@ -45,7 +45,7 @@ export class GameOverScene extends Scene {
 
     // Restart button click event
     restartButton.on("pointerup", () => {
-        engine.goToScene("start"); // Go back to main level
+        engine.goToScene("characterSelect"); // Go back to main level
     });
 
     this.add(gameOverText);

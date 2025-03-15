@@ -26,7 +26,6 @@ export class LevelUpUI extends ScreenElement {
     }
 
     selectUpgrade(choice: string, engine: Engine) {
-        console.log("Chose upgrade:", choice);
         engine.currentScene.remove(this); // Hide UI
         engine.start(); // Resume game
     }

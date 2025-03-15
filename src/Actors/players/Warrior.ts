@@ -4,6 +4,7 @@ import { WeaponFactory } from "../../Factories/weapon-factories.ts/base-weapon-f
 import { DaggerFactory } from "../../Factories/weapon-factories.ts/dagger-factory";
 
 import { Player } from "./player";
+import { ShieldFactory } from "../../Factories/weapon-factories.ts/shield-factory";
 
 export class Warrior extends Player {
   //base
@@ -27,6 +28,6 @@ export class Warrior extends Player {
 
     constructor(engine: Engine, startingPosition: Vector) {
         super(engine, startingPosition);
-        this.weapons = [new DaggerFactory(this, engine.currentScene)]
+        this.weapons = [new ShieldFactory(this, engine.currentScene)]
     }
 }

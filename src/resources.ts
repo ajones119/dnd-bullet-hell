@@ -13,6 +13,9 @@ export const Resources = {
   WolfWalk: new ImageSource("./images/wolf/wolfWalk.png"),
   WolfAttack: new ImageSource("./images/wolf/wolfAttack.png"),
 
+  SlimeWalk: new ImageSource('./images/enemies/GreenSlime/Run.png'),
+  SlimeAttack: new ImageSource('./images/enemies/GreenSlime/Run+Attack.png'),
+
   Hearts: [
     new ImageSource("./images/hearts/heartEmpty.png"),
     new ImageSource("./images/hearts/heartHalf.png"),

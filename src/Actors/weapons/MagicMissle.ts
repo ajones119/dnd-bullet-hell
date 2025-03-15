@@ -1,15 +1,20 @@
-import { Collider, CollisionContact, Engine, Shape, Side, vec, Vector, Color, Circle, Graphic } from "excalibur";
+import { Collider, CollisionContact, Engine, Shape, Side, vec,  Color, Circle } from "excalibur";
 
-import { Resources } from "../../resources";
-import { BaseWeapon, BaseWeaponProps } from "./baseWeapon";
+import { BASE_WEAPON_STATS, BaseWeapon, BaseWeaponProps } from "./baseWeapon";
 import { BaseEnemy } from "../enemies/baseEnemy";
 
+const MAGIC_MISSLE_BASE_STATS_LEVEL_MAP: BASE_WEAPON_STATS[] = [
+    {damage: 20, speed: 1000, knockback: 500, numberOfWeapons: 1, cooldown: 1000},
+    {damage: 20, speed: 1000, knockback: 500, numberOfWeapons: 1, cooldown: 1000},
+    {damage: 20, speed: 1000, knockback: 500, numberOfWeapons: 1, cooldown: 1000},
+    {damage: 20, speed: 1000, knockback: 500, numberOfWeapons: 1, cooldown: 1000},
+    {damage: 20, speed: 1000, knockback: 500, numberOfWeapons: 1, cooldown: 1000},
+    {damage: 20, speed: 1000, knockback: 500, numberOfWeapons: 1, cooldown: 1000},
+    {damage: 20, speed: 1000, knockback: 500, numberOfWeapons: 1, cooldown: 1000},
+]
 
 export class MagicMissle extends BaseWeapon {
-    damage = 20;
-    speed = 1000;
-    time = 1000;
-
+    levelUpMap: BASE_WEAPON_STATS[] = MAGIC_MISSLE_BASE_STATS_LEVEL_MAP;
     constructor(args: BaseWeaponProps) {
         super({
             ...args,
